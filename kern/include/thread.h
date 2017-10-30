@@ -164,6 +164,7 @@ void thread_yield(void);
  * Reshuffle the run queue. Called from the timer interrupt.
  */
 void schedule(void);
+void thread_join(void);
 
 /*
  * Potentially migrate ready threads to other CPUs. Called from the
