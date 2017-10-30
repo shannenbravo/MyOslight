@@ -108,15 +108,13 @@ struct thread {
 	/* VFS */
 	bool t_did_reserve_buffers;	/* reserve_buffers() in effect */
 
-	/* add more here as needed */
-	
-	
-	struct thread *th_child; 
-	struct thread *th_parent; 
-	struct lock* lk_join; 
-	struct cv* cv_join; 
-	struct wchan* th_wchan; 
-	bool is_complete; 
+  bool child_status;   //checks to see child status
+	struct thread *th_child; //child thread
+	struct thread *th_parent; //parent join
+	struct lock* lk_joinCP;  //the lock
+	struct cv* cv_joinCP;   //condition varibles
+	struct wchan* th_wchan;
+
 };
 
 /*
