@@ -486,6 +486,10 @@ static const char *testmenu[] = {
 	"[tt1] Thread test 1                 ",
 	"[tt2] Thread test 2                 ",
 	"[tt3] Thread test 3                 ",
+	"[tt4] Thread test 4		     ",  //added thread test four to the menu
+	
+	
+	
 #if OPT_NET
 	"[net] Network test                  ",
 #endif
@@ -592,7 +596,7 @@ static struct {
 #if OPT_NET
 	{ "net",	nettest },
 #endif
-	{ "tt1",	threadtest },
+	{ "tt1",	threadtest },        //call tj function 
 	{ "tt2",	threadtest2 },
 	{ "tt3",	threadtest3 },
 	{ "sy1",	semtest },
