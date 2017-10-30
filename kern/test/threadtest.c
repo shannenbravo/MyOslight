@@ -147,7 +147,7 @@ threadtest2(int nargs, char **args)
 
 
 int 
-threadtest4(int nargs, char **args)
+thread_join_testing(int nargs, char **args)
 {
 
 	(void)nargs; 
