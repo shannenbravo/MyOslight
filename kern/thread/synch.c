@@ -164,7 +164,7 @@ lock_create(const char *name)
 	}
 
 
-	spinlock_init(&lock -> lk_hold);
+	spinlock_init(&lock -> lk_lock);
 
 	lock -> myFlag = false;
 	lock -> lk_hold = NULL;
@@ -177,7 +177,7 @@ lock_destroy(struct lock *lock)
 {
 	KASSERT(lock != NULL);
 	KASSERT(lock -> lk_hold == NULL);
-	spinlock_cleanup(&lock -> lk_hold);
+	spinlock_cleanup(&lock -> lk_lock);
 	wchan_destroy(lock -> lk_wchan);
 
 	kfree(lock -> lk_name);
@@ -191,7 +191,7 @@ lock_acquire(struct lock *lock)
 
 	KASSERT(lock != NULL);
 	KASSERT(curthread -> t_in_interrupt == false);
-	spinlock_acquire(&lock -> lk_hold);
+	spinlock_acquire(&lock -> lk_lock);
 
 	while(lock -> myFlag)
 	{
@@ -202,7 +202,7 @@ lock_acquire(struct lock *lock)
     // KASSERT(lock->myFlag); //added
     // KASSERT(lock->lk_wchan==curthread);
     // spinlock_release(&lock->lk_lock);
-		wchan_sleep(lock -> lk_wchan, &lock -> lk_hold);
+		wchan_sleep(lock -> lk_wchan, &lock -> lk_lock);
 
 	}
 
@@ -211,7 +211,7 @@ lock_acquire(struct lock *lock)
 	lock -> lk_hold = curthread;
 	KASSERT(lock -> myFlag = true);
 	KASSERT(lock -> lk_hold == curthread);
-	spinlock_release(&lock -> lk_hold);
+	spinlock_release(&lock -> lk_lock);
 
 }
 
@@ -223,14 +223,14 @@ lock_release(struct lock *lock)
   // lock->lk_pimp = NULL;
 
 	KASSERT(lock != NULL);
-	spinlock_acquire(&lock -> lk_hold); //make sure that the thread has the lock
+	spinlock_acquire(&lock -> lk_lock); //make sure that the thread has the lock
 	KASSERT(lock -> myFlag = true);//check to see if the lock is locked
 	lock -> myFlag = false; //unlock
 	lock -> lk_hold = NULL;
   // lock->myFlag= true;
   // lock->lk_hold = NULL;
-	wchan_wakeone(lock -> lk_wchan, &lock -> lk_hold); //wake up release the spin lock
-  spinlock_release(&lock -> lk_hold);
+	wchan_wakeone(lock -> lk_wchan, &lock -> lk_lock); //wake up release the spin lock
+  spinlock_release(&lock -> lk_lock);
 }
 
 bool
