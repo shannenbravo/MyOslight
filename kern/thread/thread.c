@@ -151,6 +151,11 @@ thread_create(const char *name)
 
 	/* If you add to struct thread, be sure to initialize here */
 
+	thread->th_child = NULL;
+	thread->th_parent = NULL;
+	thread->lk_joinCP = NULL;
+	thread->cv_joinCP = NULL;
+
 	return thread;
 }
 
@@ -523,6 +528,16 @@ thread_fork(const char *name,
 	/* Thread subsystem fields */
 	newthread->t_cpu = curthread->t_cpu;
 
+	// ASST1 added
+
+	curthread->th_child = newthread; //set the child thread  = to a new thread
+	newthread->th_parent = curthread; // set the thread equal to the current thread
+	newthread->th_parent->child_status = false; //se the defalut status to false
+
+//create new locks and and cvs
+	curthread->lk_joinCP = lock_create("The Lock Join");
+	curthread->cv_joinCP = cv_create("The CV Join");
+
 	/* Attach the new thread to its process */
 	if (proc == NULL) {
 		proc = curthread->t_proc;
@@ -543,6 +558,7 @@ thread_fork(const char *name,
 
 	/* Set up the switchframe so entrypoint() gets called */
 	switchframe_init(newthread, entrypoint, data1, data2);
+
 
 	/* Lock the current cpu's run queue and make the new thread runnable */
 	thread_make_runnable(newthread, false);
@@ -725,6 +741,7 @@ thread_switch(threadstate_t newstate, struct wchan *wc, struct spinlock *lk)
 
 	/* Clean up dead threads. */
 	exorcise();
+	// lmao i love this name hahahahahha
 
 	/* Turn interrupts back on. */
 	splx(spl);
@@ -799,6 +816,19 @@ thread_exit(void)
 	/* Check the stack guard band. */
 	thread_checkstack(cur);
 
+/* if the parent is not equal null then aquire the key */
+	if(cur->th_parent != NULL)
+	{
+    //aquire the key
+		lock_acquire(cur->th_parent->lk_joinCP);
+    //set the child equal to null
+		cur->th_parent->th_child = NULL;
+
+		cv_signal(cur->th_parent->cv_joinCP, cur->th_parent->lk_joinCP);
+    //relase the lock on the parent
+		lock_release(cur->th_parent->lk_joinCP);
+	}
+
 	/* Interrupts off on this processor */
         splhigh();
 	thread_switch(S_ZOMBIE, NULL, NULL);
@@ -831,15 +861,26 @@ schedule(void)
 	 * round-robin fashion.
 	 */
 }
-
-void
-thread_join(void)
+//my thread join function
+void thread_join(void)
 {
-	lock_acquire(curthread -> join_lock);
-	while()
 
+  //child parent join aquires the lock
+	lock_acquire(curthread->lk_joinCP);
 
+  //while(curthread->th_child != NULL)
+  //{
+    //cv_wait(curthread->lk_joinCP, curthread->cv_joinCP )
+//  }
 
+  while(curthread->th_child != NULL)
+		{
+      //the joins wait for the child to be complete
+			cv_wait(curthread->cv_joinCP, curthread->lk_joinCP);
+
+		}
+
+	lock_release(curthread->lk_joinCP);
 }
 
 /*
