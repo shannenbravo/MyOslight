@@ -109,6 +109,14 @@ struct thread {
 	bool t_did_reserve_buffers;	/* reserve_buffers() in effect */
 
 	/* add more here as needed */
+	
+	
+	struct thread *th_child; 
+	struct thread *th_parent; 
+	struct lock* lk_join; 
+	struct cv* cv_join; 
+	struct wchan* th_wchan; 
+	bool is_complete; 
 };
 
 /*
