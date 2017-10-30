@@ -832,6 +832,16 @@ schedule(void)
 	 */
 }
 
+void
+thread_join(void)
+{
+	lock_acquire(curthread -> join_lock);
+	while()
+
+
+
+}
+
 /*
  * Thread migration.
  *
