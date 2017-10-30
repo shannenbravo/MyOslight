@@ -229,7 +229,7 @@ lock_release(struct lock *lock)
 	lock -> lk_hold = NULL;
   // lock->myFlag= true;
   // lock->lk_hold = NULL;
-	wchan_wakeone(lock -> lk_wchan, &lock -> lk_hold //wake up release the spin lock
+	wchan_wakeone(lock -> lk_wchan, &lock -> lk_hold); //wake up release the spin lock
   spinlock_release(&lock -> lk_hold);
 }
 
