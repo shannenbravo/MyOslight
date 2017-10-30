@@ -596,6 +596,7 @@ static struct {
 	{ "tt2",	threadtest2 },
 	{ "tt3",	threadtest3 },
 	{ "sy1",	semtest },
+	{ "tt4", 	thread_join_testing},
 
 	/* synchronization assignment tests */
 	{ "sy2",	locktest },
