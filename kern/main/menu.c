@@ -596,11 +596,10 @@ static struct {
 #if OPT_NET
 	{ "net",	nettest },
 #endif
-	{ "tt1",	threadtest4 },        //call tt4 function 
+	{ "tt4", 	thread_join_testing},        //call tt4 function 
 	{ "tt2",	threadtest2 },
 	{ "tt3",	threadtest3 },
 	{ "sy1",	semtest },
-	{ "tt4", 	thread_join_testing},
 
 	/* synchronization assignment tests */
 	{ "sy2",	locktest },
