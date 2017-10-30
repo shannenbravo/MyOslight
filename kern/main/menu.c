@@ -596,7 +596,7 @@ static struct {
 #if OPT_NET
 	{ "net",	nettest },
 #endif
-	{ "tt1",	threadtest },        //call tj function 
+	{ "tt1",	threadtest4 },        //call tt4 function 
 	{ "tt2",	threadtest2 },
 	{ "tt3",	threadtest3 },
 	{ "sy1",	semtest },
