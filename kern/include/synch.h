@@ -1,4 +1,6 @@
-/*	The President and Fellows of Harvard College.
+/*
+ * Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
+ *	The President and Fellows of Harvard College.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,122 +27,46 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _SYNCH_H_
-#define _SYNCH_H_
+#ifndef _SYSCALL_H_
+#define _SYSCALL_H_
+
+
+#include <cdefs.h> /* for __DEAD */
+struct trapframe; /* from <machine/trapframe.h> */
 
 /*
- * Header file for synchronization primitives.
+ * The system call dispatcher.
  */
 
-
-#include <spinlock.h>
+void syscall(struct trapframe *tf);
 
 /*
- * Dijkstra-style semaphore.
- *
- * The name field is for easier debugging. A copy of the name is made
- * internally.
+ * Support functions.
  */
-struct semaphore {
-    char *sem_name;
-	struct wchan *sem_wchan;
-	struct spinlock sem_lock;
-    volatile unsigned sem_count;
-};
 
-struct semaphore *sem_create(const char *name, unsigned initial_count);
-void sem_destroy(struct semaphore *);
+/* Helper for fork(). You write this. */
+void enter_forked_process(struct trapframe *tf);
 
-/*
- * Operations (both atomic):
- *     P (proberen): decrement count. If the count is 0, block until
- *                   the count is 1 again before decrementing.
- *     V (verhogen): increment count.
- */
-void P(struct semaphore *);
-void V(struct semaphore *);
+/* Enter user mode. Does not return. */
+__DEAD void enter_new_process(int argc, userptr_t argv, userptr_t env,
+		       vaddr_t stackptr, vaddr_t entrypoint);
 
 
 /*
- * Simple lock for mutual exclusion.
- *
- * When the lock is created, no thread should be holding it. Likewise,
- * when the lock is destroyed, no thread should be holding it.
- *
- * The name field is for easier debugging. A copy of the name is
- * (should be) made internally.
- */
-struct lock {
-    char *lk_name;
-    //keep the waiting lock to keep the next lk holder
-	  struct wchan * lk_wchan;
-    //keep track to see if the thread has the lock
-    volatile bool myFlag;
-	   // the hold
-    struct thread *lk_hold;
-	   //spin lock
-    struct spinlock lk_lock;
-};
-
-struct lock *lock_create(const char *name);
-void lock_destroy(struct lock *);
-
-/*
- * Operations:
- *    lock_acquire - Get the lock. Only one thread can hold the lock at the
- *                   same time.
- *    lock_release - Free the lock. Only the thread holding the lock may do
- *                   this.
- *    lock_do_i_hold - Return true if the current thread holds the lock;
- *                   false otherwise.
- *
- * These operations must be atomic. You get to write them.
- */
-void lock_acquire(struct lock *);
-void lock_release(struct lock *);
-bool lock_do_i_hold(struct lock *);
-
-
-/*
- * Condition variable.
- *
- * Note that the "variable" is a bit of a misnomer: a CV is normally used
- * to wait until a variable meets a particular condition, but there's no
- * actual variable, as such, in the CV.
- *
- * These CVs are expected to support Mesa semantics, that is, no
- * guarantees are made about scheduling.
- *
- * The name field is for easier debugging. A copy of the name is
- * (should be) made internally.
+ * Prototypes for IN-KERNEL entry points for system call implementations.
  */
 
-struct cv
- {
-        char *cv_name;
-	      struct wchan *cv_wchan;
-        struct spinlock cv_lock;
-};
+int sys_reboot(int code);
+int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
+void sys__exit(int code);
 
-struct cv *cv_create(const char *name);
-void cv_destroy(struct cv *);
-
-/*
- * Operations:
- *    cv_wait      - Release the supplied lock, go to sleep, and, after
- *                   waking up again, re-acquire the lock.
- *    cv_signal    - Wake up one thread that's sleeping on this CV.
- *    cv_broadcast - Wake up all threads sleeping on this CV.
- *
- * For all three operations, the current thread must hold the lock passed
- * in. Note that under normal circumstances the same lock should be used
- * on all operations with any particular CV.
- *
- * These operations must be atomic. You get to write them.
- */
-void cv_wait(struct cv *cv, struct lock *lock);
-void cv_signal(struct cv *cv, struct lock *lock);
-void cv_broadcast(struct cv *cv, struct lock *lock);
+int sys_open(const_userptr_t filename, int flags, mode_t mode, int *retval);
+int sys_read(int fd, userptr_t buf, size_t size, int *retval);
+int sys_write(int fd, userptr_t buf, size_t size, int *retval);
+int sys_close(int fd, int *retval);
+int sys_meld(const_userptr_t upath1, const_userptr_t upath2, const_userptr_t upathmerge, int *retval);
 
 
-#endif /* _SYNCH_H_ */
+/* You need to add more for sys_meld, sys_write, and sys_close */
+
+#endif /* _SYSCALL_H_ */
